@@ -102,12 +102,53 @@ Additionally, we define a `volumeClaimTemplates` section to provision persistent
 
 By using this StatefulSet configuration, Kubernetes ensures that each cache instance in the distributed caching system has a stable network identity, persistent storage, and ordered deployment. This allows seamless scaling, rescheduling, and maintenance of stateful applications, ensuring data consistency and high availability.
 
-### 3. DaemonSet
+## 3. DaemonSet
+
 **Overview:** DaemonSet ensures that a specific pod runs on each node within a Kubernetes cluster. It is primarily used for deploying background tasks, monitoring agents, or logging daemons that need to be present on every node.
 
 **Use Cases:** DaemonSet is commonly used for cluster-wide operations like log collection, monitoring, or deploying infrastructure-related components.
 
 **Real-Time Example:** Consider a security monitoring system that requires a network packet capture agent to be deployed on every node for real-time analysis. By utilizing a DaemonSet, the packet capture agent can be automatically deployed to each node, ensuring comprehensive network visibility and threat detection across the entire cluster.
+
+### YAML Example:
+
+Let's consider a YAML configuration example for deploying a network packet capture agent as a DaemonSet:
+
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: packet-capture
+spec:
+  selector:
+    matchLabels:
+      app: packet-capture
+  template:
+    metadata:
+      labels:
+        app: packet-capture
+    spec:
+      containers:
+        - name: packet-capture-container
+          image: my-packet-capture-image:v1
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: var-run
+              mountPath: /var/run
+  updateStrategy:
+    type: RollingUpdate
+```
+
+In the above example, we define a DaemonSet named `packet-capture` that will ensure the packet capture agent pod runs on each node in the Kubernetes cluster. The `selector` field specifies the label selector used to identify the pods managed by this DaemonSet. In this case, the pods are selected based on the label `app: packet-capture`.
+
+The `template` section defines the pod template used by the DaemonSet. It specifies the container name, image, and any necessary configuration. In this example, we have a single container named `packet-capture-container` running the `my-packet-capture-image:v1` image. Additionally, the `securityContext` allows the container to run with privileged access, which is often required for network packet capture.
+
+To enable the packet capture agent to access host-level resources, we mount the `/var/run` directory of the host using the `volumeMounts` field. This allows the agent to capture network packets and perform analysis.
+
+The `updateStrategy` field specifies the update strategy for the DaemonSet. In this example, we use a `RollingUpdate` strategy, which ensures that updates to the DaemonSet are applied gradually, one node at a time, preventing service disruptions.
+
+By deploying this DaemonSet, the packet capture agent pod will be automatically scheduled and managed on every node within the Kubernetes cluster. This enables comprehensive network monitoring and threat detection capabilities, ensuring the security of the entire cluster infrastructure.
 
 ### 4. Deployment
 **Overview:** Deployment is a higher-level abstraction built on top of ReplicaSet. It provides declarative updates to manage applications and their associated ReplicaSets. Deployment ensures seamless updates, rollback capabilities, and scaling of application replicas.
