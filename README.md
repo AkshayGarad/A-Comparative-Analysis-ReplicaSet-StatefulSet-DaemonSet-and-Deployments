@@ -1,4 +1,4 @@
-## Decoding ReplicaSet, StatefulSet, DaemonSet, and Deployments: A Comparative Analysis
+# Decoding ReplicaSet, StatefulSet, DaemonSet, and Deployments: A Comparative Analysis
 
 In the world of containerized applications and cloud-native architectures, Kubernetes has emerged as the de facto standard for orchestrating and managing container deployments. Within the Kubernetes ecosystem, several key components play a crucial role in ensuring the scalability, reliability, and fault-tolerance of applications. Four of these essential components are ReplicaSet, StatefulSet, DaemonSet, and Deployment. 
 
