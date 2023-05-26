@@ -46,12 +46,61 @@ By creating this ReplicaSet, Kubernetes ensures that there are always three iden
 
 This level of automation provided by ReplicaSet simplifies the management of stateless applications, allowing developers to focus on the application logic without worrying about the underlying infrastructure.
 
-### 2. StatefulSet
+## 2. StatefulSet
+
 **Overview:** StatefulSet is an extension of ReplicaSet that provides ordering and unique network identities for pods. It maintains a consistent identity for each pod across rescheduling, scaling, and failures, making it suitable for stateful applications that require stable network identities and persistent storage.
 
 **Use Cases:** StatefulSet is commonly used for applications that rely on databases, queues, or distributed storage systems.
 
 **Real-Time Example:** Imagine a scenario where you have a distributed caching system like Redis or Memcached, where each cache instance maintains a portion of the overall data. Using a StatefulSet, you can ensure that each cache instance has a stable network identity and persistent storage. This allows you to add or remove instances without affecting the data distribution, ensuring high availability and fault-tolerance.
+
+### YAML Example:
+
+Let's consider a YAML configuration example for a StatefulSet managing a distributed caching system:
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cache-system
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cache
+  serviceName: cache-service
+  template:
+    metadata:
+      labels:
+        app: cache
+    spec:
+      containers:
+        - name: cache-container
+          image: my-cache-image:v1
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: cache-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: cache-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 10Gi
+```
+
+In the above example, we define a StatefulSet named `cache-system` with a desired number of replicas set to 3. The `selector` field specifies the label selector used to identify the pods managed by this StatefulSet. In this case, the pods are selected based on the label `app: cache`.
+
+The `serviceName` field specifies the name of the headless service associated with the StatefulSet. This service provides a stable network identity for each pod, allowing other components to reliably connect to individual pods.
+
+The `template` section defines the pod template used by the StatefulSet. It specifies the container name, image, and port that should be exposed within the pods. In this example, we have a single container named `cache-container` running the `my-cache-image:v1` image on port 6379, which is the default port for Redis.
+
+Additionally, we define a `volumeClaimTemplates` section to provision persistent storage for each pod. In this example, we create a PVC (PersistentVolumeClaim) named `cache-data` with a requested storage size of 10Gi. Each pod in the StatefulSet will have its own unique PVC, ensuring that the data is preserved even if a pod is rescheduled or scaled.
+
+By using this StatefulSet configuration, Kubernetes ensures that each cache instance in the distributed caching system has a stable network identity, persistent storage, and ordered deployment. This allows seamless scaling, rescheduling, and maintenance of stateful applications, ensuring data consistency and high availability.
 
 ### 3. DaemonSet
 **Overview:** DaemonSet ensures that a specific pod runs on each node within a Kubernetes cluster. It is primarily used for deploying background tasks, monitoring agents, or logging daemons that need to be present on every node.
